@@ -1,0 +1,484 @@
+import { useState } from "react";
+import { AppLayout } from "../components/layout/AppLayout";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Card } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { Avatar, AvatarFallback } from "../components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../components/ui/dialog";
+import {
+  Search,
+  Filter,
+  Clock,
+  Star,
+  Users,
+  TrendingUp,
+  Award,
+  Calendar,
+  MapPin,
+} from "lucide-react";
+import { toast } from "sonner";
+
+type Class = {
+  id: number;
+  title: string;
+  teacher: string;
+  teacherAvatar: string;
+  category: string;
+  credits: number;
+  rating: number;
+  students: number;
+  level: "Iniciante" | "Intermediário" | "Avançado";
+  duration: string;
+  description: string;
+  schedule: string[];
+  location: "Online" | "Presencial" | "Híbrido";
+  tags: string[];
+};
+
+export function Marketplace() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedClass, setSelectedClass] = useState<Class | null>(null);
+  const [userCredits] = useState(5);
+
+  const classes: Class[] = [
+    {
+      id: 1,
+      title: "Python para Iniciantes",
+      teacher: "Maria Silva",
+      teacherAvatar: "MS",
+      category: "Programação",
+      credits: 2,
+      rating: 4.8,
+      students: 124,
+      level: "Iniciante",
+      duration: "2 horas",
+      description:
+        "Aprenda os fundamentos de Python com exemplos práticos e projetos reais. Ideal para quem está começando na programação.",
+      schedule: ["Seg 14:00", "Qua 14:00"],
+      location: "Online",
+      tags: ["Python", "Programação", "Básico"],
+    },
+    {
+      id: 2,
+      title: "Design Thinking na Prática",
+      teacher: "João Santos",
+      teacherAvatar: "JS",
+      category: "Design",
+      credits: 1,
+      rating: 4.9,
+      students: 89,
+      level: "Intermediário",
+      duration: "1.5 horas",
+      description:
+        "Metodologia completa de Design Thinking com cases reais e ferramentas práticas para inovação.",
+      schedule: ["Ter 10:00", "Qui 10:00"],
+      location: "Híbrido",
+      tags: ["Design", "Inovação", "UX"],
+    },
+    {
+      id: 3,
+      title: "Inglês Conversação",
+      teacher: "Ana Costa",
+      teacherAvatar: "AC",
+      category: "Idiomas",
+      credits: 1,
+      rating: 5.0,
+      students: 203,
+      level: "Intermediário",
+      duration: "1 hora",
+      description:
+        "Melhore sua fluência com conversação real. Aulas focadas em comunicação do dia a dia e situações profissionais.",
+      schedule: ["Seg 19:00", "Qua 19:00", "Sex 19:00"],
+      location: "Online",
+      tags: ["Inglês", "Conversação", "Fluência"],
+    },
+    {
+      id: 4,
+      title: "Marketing Digital Estratégico",
+      teacher: "Pedro Oliveira",
+      teacherAvatar: "PO",
+      category: "Marketing",
+      credits: 3,
+      rating: 4.7,
+      students: 156,
+      level: "Avançado",
+      duration: "3 horas",
+      description:
+        "Estratégias avançadas de marketing digital, incluindo SEO, SEM, redes sociais e analytics.",
+      schedule: ["Sáb 09:00"],
+      location: "Online",
+      tags: ["Marketing", "Digital", "SEO"],
+    },
+    {
+      id: 5,
+      title: "Fotografia para Iniciantes",
+      teacher: "Laura Mendes",
+      teacherAvatar: "LM",
+      category: "Arte",
+      credits: 2,
+      rating: 4.6,
+      students: 67,
+      level: "Iniciante",
+      duration: "2 horas",
+      description:
+        "Fundamentos de fotografia: composição, iluminação, equipamentos e edição básica.",
+      schedule: ["Dom 14:00"],
+      location: "Presencial",
+      tags: ["Fotografia", "Arte", "Composição"],
+    },
+    {
+      id: 6,
+      title: "Yoga e Meditação",
+      teacher: "Carla Lima",
+      teacherAvatar: "CL",
+      category: "Bem-estar",
+      credits: 1,
+      rating: 4.9,
+      students: 178,
+      level: "Iniciante",
+      duration: "1 hora",
+      description:
+        "Práticas de yoga e meditação para reduzir stress e aumentar bem-estar físico e mental.",
+      schedule: ["Seg 07:00", "Qua 07:00", "Sex 07:00"],
+      location: "Online",
+      tags: ["Yoga", "Meditação", "Bem-estar"],
+    },
+  ];
+
+  const categories = [
+    "Todos",
+    "Programação",
+    "Design",
+    "Idiomas",
+    "Marketing",
+    "Arte",
+    "Bem-estar",
+  ];
+
+  const filteredClasses = classes.filter((cls) => {
+    const matchesSearch =
+      cls.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cls.teacher.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cls.tags.some((tag) =>
+        tag.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+    const matchesCategory =
+      selectedCategory === "all" ||
+      selectedCategory === "Todos" ||
+      cls.category === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  });
+
+  const handleBookClass = (cls: Class) => {
+    if (userCredits < cls.credits) {
+      toast.error("Créditos insuficientes! Ensine para ganhar mais créditos.");
+      return;
+    }
+
+    toast.success(`Aula "${cls.title}" agendada com sucesso!`);
+    setSelectedClass(null);
+  };
+
+  const popularClasses = classes
+    .sort((a, b) => b.students - a.students)
+    .slice(0, 3);
+
+  return (
+    <AppLayout>
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl mb-2">Marketplace de Conhecimento</h1>
+          <p className="text-gray-600">
+            Explore milhares de aulas e troque seus créditos por aprendizado
+          </p>
+        </div>
+
+        {/* Stats */}
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-gray-700">Seus Créditos</p>
+              <Clock className="size-5 text-blue-600" />
+            </div>
+            <p className="text-3xl">{userCredits}</p>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-gray-600">Total de Aulas</p>
+              <TrendingUp className="size-5 text-gray-400" />
+            </div>
+            <p className="text-3xl">{classes.length}</p>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-gray-600">Professores Ativos</p>
+              <Users className="size-5 text-gray-400" />
+            </div>
+            <p className="text-3xl">245</p>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-gray-600">Categorias</p>
+              <Award className="size-5 text-gray-400" />
+            </div>
+            <p className="text-3xl">{categories.length - 1}</p>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="all" className="mb-8">
+          <TabsList>
+            <TabsTrigger value="all">Todas as Aulas</TabsTrigger>
+            <TabsTrigger value="popular">Mais Populares</TabsTrigger>
+            <TabsTrigger value="new">Novidades</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="all" className="mt-6">
+            {/* Search and Filters */}
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-3 size-5 text-gray-400" />
+                <Input
+                  placeholder="Buscar aulas, professores ou habilidades..."
+                  className="pl-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-full md:w-48">
+                  <Filter className="mr-2 size-4" />
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {categories.slice(1).map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Classes Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredClasses.map((cls) => (
+                <Dialog
+                  key={cls.id}
+                  open={selectedClass?.id === cls.id}
+                  onOpenChange={(open) => !open && setSelectedClass(null)}
+                >
+                  <DialogTrigger asChild>
+                    <Card
+                      className="p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                      onClick={() => setSelectedClass(cls)}
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarFallback>{cls.teacherAvatar}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-sm text-gray-600">
+                              {cls.teacher}
+                            </p>
+                            <div className="flex items-center gap-1">
+                              <Star className="size-3 fill-yellow-400 text-yellow-400" />
+                              <span className="text-sm">{cls.rating}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <Badge variant="secondary">{cls.category}</Badge>
+                      </div>
+
+                      <h3 className="text-xl mb-2">{cls.title}</h3>
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        {cls.description}
+                      </p>
+
+                      <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+                        <span className="flex items-center gap-1">
+                          <Clock className="size-4" />
+                          {cls.duration}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="size-4" />
+                          {cls.students}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline">{cls.level}</Badge>
+                        <div className="flex items-center gap-1 text-blue-600">
+                          <Clock className="size-4" />
+                          <span className="font-medium">{cls.credits} créditos</span>
+                        </div>
+                      </div>
+                    </Card>
+                  </DialogTrigger>
+
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl">{cls.title}</DialogTitle>
+                      <DialogDescription>
+                        Ministrado por {cls.teacher}
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="size-16">
+                          <AvatarFallback>{cls.teacherAvatar}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="font-medium">{cls.teacher}</p>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Star className="size-4 fill-yellow-400 text-yellow-400" />
+                            <span>{cls.rating} • {cls.students} alunos</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-3xl text-blue-600 font-medium">
+                            {cls.credits}
+                          </p>
+                          <p className="text-sm text-gray-600">créditos</p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="font-medium mb-2">Sobre a aula</h4>
+                        <p className="text-gray-600">{cls.description}</p>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-medium mb-2 flex items-center gap-2">
+                            <Calendar className="size-4" />
+                            Horários
+                          </h4>
+                          <div className="space-y-1">
+                            {cls.schedule.map((time, idx) => (
+                              <p key={idx} className="text-sm text-gray-600">
+                                {time}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-medium mb-2 flex items-center gap-2">
+                            <MapPin className="size-4" />
+                            Modalidade
+                          </h4>
+                          <Badge>{cls.location}</Badge>
+                          <div className="mt-3">
+                            <p className="text-sm text-gray-600 mb-1">Nível</p>
+                            <Badge variant="outline">{cls.level}</Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="font-medium mb-2">Tags</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {cls.tags.map((tag) => (
+                            <Badge key={tag} variant="secondary">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setSelectedClass(null)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={() => handleBookClass(cls)}
+                        disabled={userCredits < cls.credits}
+                      >
+                        {userCredits < cls.credits
+                          ? "Créditos insuficientes"
+                          : `Agendar (${cls.credits} créditos)`}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              ))}
+            </div>
+
+            {filteredClasses.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500">
+                  Nenhuma aula encontrada. Tente outra busca.
+                </p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="popular" className="mt-6">
+            <div className="grid md:grid-cols-3 gap-6">
+              {popularClasses.map((cls, index) => (
+                <Card key={cls.id} className="p-6 relative overflow-hidden">
+                  <div className="absolute top-4 right-4">
+                    <Badge className="bg-yellow-500">#{index + 1}</Badge>
+                  </div>
+                  <h3 className="text-xl mb-2 pr-12">{cls.title}</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    por {cls.teacher}
+                  </p>
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <span className="flex items-center gap-1">
+                      <Users className="size-4" />
+                      {cls.students}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Star className="size-4 fill-yellow-400 text-yellow-400" />
+                      {cls.rating}
+                    </span>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="new" className="mt-6">
+            <div className="text-center py-12">
+              <p className="text-gray-500">
+                Novas aulas serão exibidas aqui em breve!
+              </p>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </AppLayout>
+  );
+}

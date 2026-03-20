@@ -1,0 +1,531 @@
+import { useState } from "react";
+import { AppLayout } from "../components/layout/AppLayout";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Card } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { Label } from "../components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../components/ui/accordion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../components/ui/dialog";
+import {
+  MessageCircle,
+  AlertTriangle,
+  HelpCircle,
+  CheckCircle,
+  Clock,
+  Send,
+  Bot,
+  Phone,
+  Mail,
+  FileText,
+} from "lucide-react";
+import { toast } from "sonner";
+import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+
+type Ticket = {
+  id: string;
+  subject: string;
+  status: "open" | "in-progress" | "resolved";
+  category: string;
+  createdAt: string;
+  lastUpdate: string;
+};
+
+export function Support() {
+  const [chatMessages, setChatMessages] = useState([
+    {
+      id: 1,
+      text: "Olá! Sou o assistente virtual do LifeTime. Como posso ajudar?",
+      sender: "bot",
+      time: "10:30",
+    },
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
+  const myTickets: Ticket[] = [
+    {
+      id: "TK-001",
+      subject: "Dúvida sobre créditos",
+      status: "resolved",
+      category: "Créditos",
+      createdAt: "2026-03-18",
+      lastUpdate: "2026-03-19",
+    },
+  ];
+
+  const faqs = [
+    {
+      category: "Créditos",
+      questions: [
+        {
+          q: "Como ganho créditos?",
+          a: "Você ganha créditos ensinando! Para cada hora que você ensina, você recebe 1 crédito. Esses créditos podem ser usados para aprender qualquer habilidade na plataforma.",
+        },
+        {
+          q: "Os créditos expiram?",
+          a: "Não! Seus créditos são permanentes e podem ser usados a qualquer momento. Não há prazo de validade.",
+        },
+        {
+          q: "Posso transferir créditos?",
+          a: "Atualmente, créditos não podem ser transferidos entre usuários. Eles são pessoais e devem ser ganhos ensinando.",
+        },
+      ],
+    },
+    {
+      category: "Aulas",
+      questions: [
+        {
+          q: "Como cancelo uma aula?",
+          a: "Você pode cancelar uma aula até 24 horas antes do horário agendado sem penalidades. Acesse 'Minhas Aulas' e clique em 'Cancelar'.",
+        },
+        {
+          q: "O que acontece se o professor faltar?",
+          a: "Se o professor faltar sem aviso prévio, seus créditos são automaticamente reembolsados e o caso é reportado à nossa equipe de moderação.",
+        },
+        {
+          q: "Posso remarcar uma aula?",
+          a: "Sim! Entre em contato com o professor/aluno através do chat da aula para combinar um novo horário.",
+        },
+      ],
+    },
+    {
+      category: "Segurança",
+      questions: [
+        {
+          q: "Como reporto um comportamento inadequado?",
+          a: "Use o botão 'Denunciar' disponível no perfil do usuário ou entre em contato com o suporte. Levamos todas as denúncias a sério.",
+        },
+        {
+          q: "Meus dados estão seguros?",
+          a: "Sim! Utilizamos criptografia de ponta a ponta e seguimos todas as normas de proteção de dados (LGPD).",
+        },
+      ],
+    },
+  ];
+
+  const handleSendMessage = () => {
+    if (!chatInput.trim()) return;
+
+    const newMessage = {
+      id: chatMessages.length + 1,
+      text: chatInput,
+      sender: "user",
+      time: new Date().toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+
+    setChatMessages([...chatMessages, newMessage]);
+    setChatInput("");
+
+    // Simular resposta do bot
+    setTimeout(() => {
+      const botResponse = {
+        id: chatMessages.length + 2,
+        text: "Entendi sua dúvida! Um agente humano entrará em contato em breve. Enquanto isso, você pode explorar nossa Central de Ajuda.",
+        sender: "bot",
+        time: new Date().toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+      setChatMessages((prev) => [...prev, botResponse]);
+    }, 1500);
+  };
+
+  const handleSubmitReport = () => {
+    toast.success("Denúncia enviada! Nossa equipe analisará em até 24h.");
+    setReportDialogOpen(false);
+  };
+
+  const getStatusBadge = (status: Ticket["status"]) => {
+    const variants = {
+      open: { variant: "default" as const, label: "Aberto" },
+      "in-progress": { variant: "secondary" as const, label: "Em Andamento" },
+      resolved: { variant: "outline" as const, label: "Resolvido" },
+    };
+    return variants[status];
+  };
+
+  return (
+    <AppLayout>
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl mb-2">Central de Suporte</h1>
+          <p className="text-gray-600">
+            Estamos aqui para ajudar! Escolha o canal de atendimento ideal
+          </p>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <Card className="p-6 text-center hover:shadow-lg transition-shadow cursor-pointer">
+            <Bot className="size-12 mx-auto mb-3 text-blue-600" />
+            <h3 className="mb-2">Chat com IA</h3>
+            <p className="text-sm text-gray-600">Respostas instantâneas 24/7</p>
+          </Card>
+
+          <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+            <DialogTrigger asChild>
+              <Card className="p-6 text-center hover:shadow-lg transition-shadow cursor-pointer">
+                <AlertTriangle className="size-12 mx-auto mb-3 text-red-600" />
+                <h3 className="mb-2">Denunciar</h3>
+                <p className="text-sm text-gray-600">
+                  Reporte problemas ou abusos
+                </p>
+              </Card>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Fazer uma Denúncia</DialogTitle>
+                <DialogDescription>
+                  Denuncie comportamentos inadequados ou violações das regras
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Tipo de denúncia</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="harassment">Assédio</SelectItem>
+                      <SelectItem value="fraud">Fraude/Golpe</SelectItem>
+                      <SelectItem value="inappropriate">
+                        Conteúdo Inapropriado
+                      </SelectItem>
+                      <SelectItem value="noshow">Falta sem aviso</SelectItem>
+                      <SelectItem value="other">Outro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Usuário envolvido (opcional)</Label>
+                  <Input placeholder="Nome ou ID do usuário" />
+                </div>
+                <div>
+                  <Label>Descrição detalhada</Label>
+                  <Textarea
+                    placeholder="Descreva o que aconteceu..."
+                    rows={4}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setReportDialogOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button onClick={handleSubmitReport}>Enviar Denúncia</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Card className="p-6 text-center hover:shadow-lg transition-shadow cursor-pointer">
+            <Phone className="size-12 mx-auto mb-3 text-green-600" />
+            <h3 className="mb-2">Telefone</h3>
+            <p className="text-sm text-gray-600">0800 123 4567</p>
+          </Card>
+
+          <Card className="p-6 text-center hover:shadow-lg transition-shadow cursor-pointer">
+            <Mail className="size-12 mx-auto mb-3 text-purple-600" />
+            <h3 className="mb-2">E-mail</h3>
+            <p className="text-sm text-gray-600">suporte@lifetime.com</p>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="faq" className="mb-8">
+          <TabsList>
+            <TabsTrigger value="faq">
+              <HelpCircle className="mr-2 size-4" />
+              Perguntas Frequentes
+            </TabsTrigger>
+            <TabsTrigger value="chat">
+              <MessageCircle className="mr-2 size-4" />
+              Chat ao Vivo
+            </TabsTrigger>
+            <TabsTrigger value="tickets">
+              <FileText className="mr-2 size-4" />
+              Meus Chamados
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="faq" className="mt-6">
+            <Card className="p-6">
+              <h3 className="text-2xl mb-6">Perguntas Frequentes</h3>
+              {faqs.map((category) => (
+                <div key={category.category} className="mb-8">
+                  <h4 className="text-xl mb-4 text-blue-600">
+                    {category.category}
+                  </h4>
+                  <Accordion type="single" collapsible className="space-y-2">
+                    {category.questions.map((faq, index) => (
+                      <AccordionItem
+                        key={index}
+                        value={`${category.category}-${index}`}
+                        className="border rounded-lg px-4"
+                      >
+                        <AccordionTrigger className="hover:no-underline">
+                          {faq.q}
+                        </AccordionTrigger>
+                        <AccordionContent className="text-gray-600">
+                          {faq.a}
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </div>
+              ))}
+
+              <div className="mt-8 p-6 bg-blue-50 rounded-lg">
+                <h4 className="mb-3">Não encontrou sua dúvida?</h4>
+                <p className="text-sm text-gray-700 mb-4">
+                  Entre em contato conosco através do chat ou abra um chamado.
+                </p>
+                <Button>Abrir Chamado</Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="chat" className="mt-6">
+            <div className="grid lg:grid-cols-3 gap-6">
+              <Card className="lg:col-span-2 p-6">
+                <div className="flex items-center gap-3 mb-6 pb-4 border-b">
+                  <div className="bg-blue-100 size-12 rounded-full flex items-center justify-center">
+                    <Bot className="size-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">Assistente LifeTime</h3>
+                    <p className="text-sm text-gray-600">
+                      Online • Responde em segundos
+                    </p>
+                  </div>
+                </div>
+
+                <div className="h-96 overflow-y-auto mb-4 space-y-4">
+                  {chatMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`flex ${
+                        msg.sender === "user" ? "justify-end" : "justify-start"
+                      }`}
+                    >
+                      <div
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                          msg.sender === "user"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        <p>{msg.text}</p>
+                        <p
+                          className={`text-xs mt-1 ${
+                            msg.sender === "user"
+                              ? "text-blue-100"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {msg.time}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Digite sua mensagem..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleSendMessage();
+                      }
+                    }}
+                  />
+                  <Button onClick={handleSendMessage}>
+                    <Send className="size-4" />
+                  </Button>
+                </div>
+              </Card>
+
+              <Card className="p-6">
+                <h3 className="mb-4">Dicas Rápidas</h3>
+                <div className="space-y-4">
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm">
+                      💡 Nosso chatbot pode resolver 80% das dúvidas
+                      instantaneamente!
+                    </p>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded-lg">
+                    <p className="text-sm">
+                      ⚡ Tempo médio de resposta: menos de 1 minuto
+                    </p>
+                  </div>
+                  <div className="p-3 bg-purple-50 rounded-lg">
+                    <p className="text-sm">
+                      🤝 Se precisar, um agente humano assume o chat
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-6 border-t">
+                  <h4 className="text-sm mb-3">Tópicos populares</h4>
+                  <div className="space-y-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() =>
+                        setChatInput("Como ganho créditos?")
+                      }
+                    >
+                      Como ganho créditos?
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() =>
+                        setChatInput("Como cancelo uma aula?")
+                      }
+                    >
+                      Como cancelo uma aula?
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() =>
+                        setChatInput("Problemas com pagamento")
+                      }
+                    >
+                      Problemas com pagamento
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="tickets" className="mt-6">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl">Meus Chamados</h3>
+                <Button>
+                  <FileText className="mr-2 size-4" />
+                  Novo Chamado
+                </Button>
+              </div>
+
+              {myTickets.length > 0 ? (
+                <div className="space-y-4">
+                  {myTickets.map((ticket) => {
+                    const badge = getStatusBadge(ticket.status);
+                    return (
+                      <div
+                        key={ticket.id}
+                        className="p-4 border rounded-lg hover:bg-gray-50"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm text-gray-500">
+                                {ticket.id}
+                              </span>
+                              <Badge variant={badge.variant}>
+                                {badge.label}
+                              </Badge>
+                            </div>
+                            <h4 className="font-medium">{ticket.subject}</h4>
+                            <p className="text-sm text-gray-600">
+                              {ticket.category}
+                            </p>
+                          </div>
+                          <Button variant="outline" size="sm">
+                            Ver Detalhes
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-500 mt-3">
+                          <span className="flex items-center gap-1">
+                            <Clock className="size-4" />
+                            Criado em {ticket.createdAt}
+                          </span>
+                          <span>
+                            Última atualização em {ticket.lastUpdate}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <CheckCircle className="size-16 mx-auto mb-4 text-green-500" />
+                  <h4 className="text-xl mb-2">Tudo certo por aqui!</h4>
+                  <p className="text-gray-600 mb-4">
+                    Você não tem chamados abertos no momento.
+                  </p>
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* KPIs Section */}
+        <Card className="p-8 bg-gradient-to-br from-green-50 to-blue-50">
+          <h2 className="text-2xl mb-6 text-center">
+            Índices de Qualidade do Suporte
+          </h2>
+          <div className="grid md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="text-4xl mb-2">98%</div>
+              <p className="text-sm text-gray-600">Satisfação</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl mb-2">&lt;1min</div>
+              <p className="text-sm text-gray-600">Tempo de Resposta</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl mb-2">24/7</div>
+              <p className="text-sm text-gray-600">Disponibilidade</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl mb-2">95%</div>
+              <p className="text-sm text-gray-600">Resolução 1ª Interação</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </AppLayout>
+  );
+}
